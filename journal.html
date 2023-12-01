@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Посещаемость студентов</title>
+    <link rel="stylesheet" href="normalize.css">
+    <link rel="stylesheet" href="journal.css">
+  </head>
+  <body class="journal">
+    <h2>Посещаемость студентов</h2>
+    <a href="./index.html">Назад</a>
+    <table id="attendanceTable">
+      <thead>
+        <tr>
+          <th>ФИО студента</th>
+          <th>Количество дней</th>
+          <!-- Динамически создаваемые заголовки столбцов с числами от 1 до максимального количества дней в месяце -->
+          <tr id="headerCell"></tr>
+        </tr>
+      </thead>
+      <tbody id="attendanceBody">
+        <!-- Здесь будет динамически сформированная таблица -->
+      </tbody>
+    </table>
+
+    <script>
+      // Данные о студентах и посещаемости
+      let studentsData = JSON.parse(localStorage.getItem("studentsData")) || [
+        { name: "Иванов Иван", attendance: Array(30).fill(0) },
+        { name: "Тиньков Олег", attendance: Array(30).fill(0) },
+        { name: "Ананьева Дарья", attendance: Array(30).fill(0) },
+        { name: "Новикова Николь", attendance: Array(30).fill(0) },
+        { name: "Кудрявцев Артём", attendance: Array(30).fill(0) },
+        { name: "Матвеев Владислав", attendance: Array(30).fill(0) },
+        { name: "Полякова Фатима", attendance: Array(30).fill(0) },
+        { name: "Блинова Алиса", attendance: Array(30).fill(0) },
+        { name: "Волков Сергей", attendance: Array(30).fill(0) },
+        { name: "Золотов Глеб", attendance: Array(30).fill(0) },
+        { name: "Иванов Иван", attendance: Array(30).fill(0) },
+
+        // Добавьте данные для других студентов по аналогии
+      ];
+
+      const tableBody = document.getElementById("attendanceBody");
+      const headerCell = document.getElementById("headerCell");
+
+      // Функция для создания и добавления строк в таблицу
+      function renderAttendanceTable() {
+        tableBody.innerHTML = ""; // Очистка содержимого таблицы перед обновлением
+
+        studentsData.forEach((student, studentIndex) => {
+          const row = document.createElement("tr");
+
+          // Добавление ФИО студента в ячейку
+          const nameCell = document.createElement("td");
+          nameCell.textContent = student.name;
+          row.appendChild(nameCell);
+
+          // Добавление ячеек с выбором посещаемости для каждого дня
+          for (let day = 1; day <= student.attendance.length; day++) {
+            const attendanceCell = document.createElement("td");
+            const select = document.createElement("select");
+            select.dataset.studentIndex = studentIndex;
+            select.dataset.day = day;
+
+            const optionPlus = document.createElement("option");
+            optionPlus.value = "+";
+            optionPlus.textContent = "+";
+            select.appendChild(optionPlus);
+
+            const optionMinus = document.createElement("option");
+            optionMinus.value = "-";
+            optionMinus.textContent = "-";
+            select.appendChild(optionMinus);
+
+            select.value = student.attendance[day - 1];
+            select.addEventListener("change", handleAttendanceChange);
+
+            attendanceCell.appendChild(select);
+            row.appendChild(attendanceCell);
+          }
+
+          tableBody.appendChild(row);
+        });
+
+        // Обновление заголовков столбцов с числами от 1 до максимального количества дней
+        const maxDays = getMaxDays();
+        headerCell.innerHTML = "";
+        for (let day = 0; day <= maxDays; day++) {
+          const dayCell = document.createElement("th");
+          dayCell.textContent = day;
+          headerCell.appendChild(dayCell);
+        }
+      }
+
+      // Функция для обработки изменений в посещаемости и сохранения в локальное хранилище
+      function handleAttendanceChange(event) {
+        const { studentIndex, day } = event.target.dataset;
+        const selectedValue = event.target.value;
+
+        // Обновление данных в массиве и сохранение в локальное хранилище
+        studentsData[studentIndex].attendance[day - 1] = selectedValue;
+        localStorage.setItem("studentsData", JSON.stringify(studentsData));
+      }
+
+      // Функция для определения максимального количества дней в месяце с учетом всех студентов
+      function getMaxDays() {
+        let maxDays = 0;
+        studentsData.forEach((student) => {
+          if (student.attendance.length > maxDays) {
+            maxDays = student.attendance.length;
+          }
+        });
+        return maxDays;
+      }
+
+      // Вызов функции для отрисовки таблицы
+      renderAttendanceTable();
+    </script>
+  </body>
+</html>
